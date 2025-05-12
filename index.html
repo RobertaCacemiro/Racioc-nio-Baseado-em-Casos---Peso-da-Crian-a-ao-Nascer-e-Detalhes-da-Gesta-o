@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <title>RBC - Peso ao Nascer</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <style>
+        .btn-pink {
+            background-color: #e83e8c;
+            color: white;
+            border: none;
+            margin-top: 20px;
+        }
+
+        .btn-pink:hover {
+            background-color: #d63384;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            background-color: #f8c1d8;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            background-color: #f8c1d8;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container py-4">
+        <h3 class="mb-4">Raciocínio Baseado em Casos - Peso da Criança ao Nascer e Detalhes da Gestação</h3>
+
+        <div class="ps-3 py-2 my-3" style="border-left: 4px solid #d63384; background-color: #ffe6f0;">
+            <p class="mb-0">
+                Prever o peso do bebê ao nascer com base em características maternas e gestacionais.
+            </p>
+        </div>
+
+        <!-- Modal de edição de pesos -->
+        <div class="modal fade" id="pesosModal" tabindex="-1" aria-labelledby="pesosModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header" style="background-color: #d63384; color: #fff;">
+                        <h5 class="modal-title" id="pesosModalLabel">Pesos dos Atributos - Editavel</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- Sliders de pesos -->
+                        <div class="mb-1">
+                            <label for="peso_gestation">Gestação:
+                                <strong id="peso_gestation_val"> 2</strong>
+                                <small class="text-muted d-block" id="peso_gestation_info">Importância média</small>
+                            </label>
+                            <input type="range" class="form-range" min="1" max="10" name="peso_gestation"
+                                id="peso_gestation" value="2" oninput="fAtualizaPeso('gestation')">
+                        </div>
+                        <div class="mb-1">
+                            <label for="peso_parity">Partos Anterios:
+                                <strong id="peso_parity_val"> 1</strong>
+                                <small class="text-muted d-block" id="peso_parity_info">Importância média</small>
+                            </label>
+                            <input type="range" class="form-range" min="1" max="10" name="peso_parity" id="peso_parity"
+                                value="1" oninput="fAtualizaPeso('parity')">
+                        </div>
+                        <div class="mb-1">
+                            <label for="peso_age">Idade da Mãe:
+                                <strong id="peso_age_val"> 2</strong>
+                                <small class="text-muted d-block" id="peso_age_info">Importância média</small>
+                            </label>
+                            <input type="range" class="form-range" min="1" max="10" name="peso_age" id="peso_age"
+                                value="2" oninput="fAtualizaPeso('age')">
+                        </div>
+                        <div class="mb-1">
+                            <label for="peso_height">Altura da Mãe:
+                                <strong id="peso_height_val"> 2</strong>
+                                <small class="text-muted d-block" id="peso_height_info">Importância média</small>
+                            </label>
+                            <input type="range" class="form-range" min="1" max="10" name="peso_height" id="peso_height"
+                                value="2" oninput="fAtualizaPeso('height')">
+                        </div>
+                        <div class="mb-1">
+                            <label for="peso_weight">Peso da Mãe:
+                                <strong id="peso_weight_val"> 2</strong>
+                                <small class="text-muted d-block" id="peso_weight_info">Importância média</small>
+                            </label>
+                            <input type="range" class="form-range" min="1" max="10" name="peso_weight" id="peso_weight"
+                                value="2" oninput="fAtualizaPeso('weight')">
+                        </div>
+                        <div class="mb-1">
+                            <label for="peso_smoke">Fumante:
+                                <strong id="peso_smoke_val"> 5</strong>
+                                <small class="text-muted d-block" id="peso_smoke_info">Importância média</small>
+                            </label>
+                            <input type="range" class="form-range" min="1" max="10" name="peso_smoke" id="peso_smoke"
+                                value="1" oninput="fAtualizaPeso('smoke')">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-pink" data-bs-dismiss="modal">Fechar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Formulário de entrada -->
+        <form id="rbcForm" method="POST" action="busca_similaridades.php">
+            <!-- Pesos escondidos que serão preenchidos pelos sliders -->
+            <input type="hidden" name="peso_gestation">
+            <input type="hidden" name="peso_parity">
+            <input type="hidden" name="peso_age">
+            <input type="hidden" name="peso_height">
+            <input type="hidden" name="peso_weight">
+            <input type="hidden" name="peso_smoke">
+
+            <!-- Parametro de busca -->
+            <div class="row align-items-end">
+                <div class="col-md-2">
+                    <label class="form-label">Gestação (dias)</label>
+                    <input type="number" name="gestation" class="form-control" required value="280">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Partos Anteriores</label>
+                    <input type="number" name="parity" class="form-control" required value="0">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Idade da Mãe</label>
+                    <input type="number" name="age" class="form-control" required value="30">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Altura da Mãe</label>
+                    <input type="number" name="height" class="form-control" required value="65">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Peso da Mãe</label>
+                    <input type="number" name="weight" class="form-control" required value="135">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Fumante?</label>
+                    <select name="smoke" class="form-control" required>
+                        <option value="0" selected>Não</option>
+                        <option value="1">Sim</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Botão para abrir o modal de pesos -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <button type="button" class="btn btn-pink" data-bs-toggle="modal" data-bs-target="#pesosModal">
+                    Pesos
+                </button>
+
+                <button type="submit" class="btn btn-pink">Buscar Similares</button>
+            </div>
+
+        </form>
+
+        <hr class="my-3">
+        <h4 class="py-2">Casos</h4>
+        <div id="resultado">
+            <!-- Resultados -->
+        </div>
+    </div>
+
+    <script>
+    function fAtualizaPeso(campo) {
+        const val = document.getElementById(`peso_${campo}`).value;
+        document.getElementById(`peso_${campo}_val`).textContent = val;
+
+        let msg = "Importância média";
+        if (val < 5) msg = "Menor importância";
+        else if (val > 5) msg = "Maior importância";
+
+        document.getElementById(`peso_${campo}_info`).textContent = msg;
+    }
+
+    // Atualiza os sliders inicialmente
+    ['gestation', 'parity', 'age', 'height', 'weight', 'smoke'].forEach(fAtualizaPeso);
+
+    // Submete o formulário via fetch (AJAX)
+    document.getElementById("rbcForm").addEventListener("submit", function (e) {
+        e.preventDefault(); // impede reload
+
+        // Preenche os inputs ocultos com os valores dos sliders
+        this.peso_gestation.value = document.getElementById("peso_gestation").value;
+        this.peso_parity.value    = document.getElementById("peso_parity").value;
+        this.peso_age.value       = document.getElementById("peso_age").value;
+        this.peso_height.value    = document.getElementById("peso_height").value;
+        this.peso_weight.value    = document.getElementById("peso_weight").value;
+        this.peso_smoke.value     = document.getElementById("peso_smoke").value;
+
+        const formData = new FormData(this);
+
+        fetch("busca_similaridades.php", {
+            method: "POST",
+            body: formData
+        })
+        .then(response => response.text())
+        .then(html => {
+            document.getElementById("resultado").innerHTML = html;
+        })
+        .catch(error => {
+            document.getElementById("resultado").innerHTML = `<div class="alert alert-danger">Erro no processamento</div>`;
+            console.error("Erro:", error);
+        });
+    });
+</script>
+
+
+   </body>
+
+</html>
