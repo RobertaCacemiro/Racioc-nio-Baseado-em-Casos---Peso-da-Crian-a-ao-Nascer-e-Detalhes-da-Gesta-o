@@ -26,6 +26,23 @@
         input[type="range"]::-moz-range-thumb {
             background-color: #f8c1d8;
         }
+
+        .table thead th {
+            background-color: #d63384;
+            color: white;
+        }
+
+        .pagination .page-link {
+            background-color: white;
+            color: #d63384;
+            border: 1px solid #d63384;
+        }
+
+        .pagination .page-item.active .page-link {
+            background-color: #d63384;
+            border-color: #d63384;
+            color: white;
+        }
     </style>
 </head>
 
@@ -108,7 +125,7 @@
 
         <!-- Formulário de entrada -->
         <form id="rbcForm" method="POST" action="busca_similaridades.php">
-            <!-- Pesos escondidos que serão preenchidos pelos sliders -->
+
             <input type="hidden" name="peso_gestation">
             <input type="hidden" name="peso_parity">
             <input type="hidden" name="peso_age">
@@ -116,7 +133,7 @@
             <input type="hidden" name="peso_weight">
             <input type="hidden" name="peso_smoke">
 
-            <!-- Parametro de busca -->
+            <!-- Parâmetros de busca -->
             <div class="row align-items-end">
                 <div class="col-md-2">
                     <label class="form-label">Gestação (dias)</label>
@@ -132,11 +149,17 @@
                 </div>
                 <div class="col-md-2">
                     <label class="form-label">Altura da Mãe</label>
-                    <input type="number" name="height" class="form-control" required value="65">
+                    <div class="input-group">
+                        <input type="number" step="any" name="height" class="form-control" required value="165">
+                        <span class="input-group-text">cm</span>
+                    </div>
                 </div>
                 <div class="col-md-2">
                     <label class="form-label">Peso da Mãe</label>
-                    <input type="number" name="weight" class="form-control" required value="135">
+                    <div class="input-group">
+                        <input type="number" step="any" name="weight" class="form-control" required value="61">
+                        <span class="input-group-text">kg</span>
+                    </div>
                 </div>
                 <div class="col-md-2">
                     <label class="form-label">Fumante?</label>
@@ -146,6 +169,7 @@
                     </select>
                 </div>
             </div>
+
 
             <!-- Botão para abrir o modal de pesos -->
             <div class="d-flex justify-content-between align-items-center mb-3">
@@ -159,57 +183,124 @@
         </form>
 
         <hr class="my-3">
-        <h4 class="py-2">Casos</h4>
+        <h4 class="py-2">Casos Similares x Peso Bebê</h4>
         <div id="resultado">
-            <!-- Resultados -->
+            <!-- Resultados - Tabela com os casos similares -->
         </div>
     </div>
 
     <script>
-    function fAtualizaPeso(campo) {
-        const val = document.getElementById(`peso_${campo}`).value;
-        document.getElementById(`peso_${campo}_val`).textContent = val;
+        function fAtualizaPeso(campo) {
+            const val = document.getElementById(`peso_${campo}`).value;
+            document.getElementById(`peso_${campo}_val`).textContent = val;
 
-        let msg = "Importância média";
-        if (val < 5) msg = "Menor importância";
-        else if (val > 5) msg = "Maior importância";
+            let msg = "Importância média";
+            if (val < 5) msg = "Menor importância";
+            else if (val > 5) msg = "Maior importância";
 
-        document.getElementById(`peso_${campo}_info`).textContent = msg;
-    }
+            document.getElementById(`peso_${campo}_info`).textContent = msg;
+        }
 
-    // Atualiza os sliders inicialmente
-    ['gestation', 'parity', 'age', 'height', 'weight', 'smoke'].forEach(fAtualizaPeso);
+        // Atualiza os sliders inicialmente
+        ['gestation', 'parity', 'age', 'height', 'weight', 'smoke'].forEach(fAtualizaPeso);
 
-    // Submete o formulário via fetch (AJAX)
-    document.getElementById("rbcForm").addEventListener("submit", function (e) {
-        e.preventDefault(); // impede reload
+        // Submete o formulário via fetch (AJAX)
+        document.getElementById("rbcForm").addEventListener("submit", function (e) {
+            e.preventDefault(); // impede reload
 
-        // Preenche os inputs ocultos com os valores dos sliders
-        this.peso_gestation.value = document.getElementById("peso_gestation").value;
-        this.peso_parity.value    = document.getElementById("peso_parity").value;
-        this.peso_age.value       = document.getElementById("peso_age").value;
-        this.peso_height.value    = document.getElementById("peso_height").value;
-        this.peso_weight.value    = document.getElementById("peso_weight").value;
-        this.peso_smoke.value     = document.getElementById("peso_smoke").value;
+            // Preenche os inputs ocultos com os valores dos sliders
+            this.peso_gestation.value = document.getElementById("peso_gestation").value;
+            this.peso_parity.value = document.getElementById("peso_parity").value;
+            this.peso_age.value = document.getElementById("peso_age").value;
+            this.peso_height.value = document.getElementById("peso_height").value;
+            this.peso_weight.value = document.getElementById("peso_weight").value;
+            this.peso_smoke.value = document.getElementById("peso_smoke").value;
 
-        const formData = new FormData(this);
+            const formData = new FormData(this);
 
-        fetch("busca_similaridades.php", {
-            method: "POST",
-            body: formData
-        })
-        .then(response => response.text())
-        .then(html => {
-            document.getElementById("resultado").innerHTML = html;
-        })
-        .catch(error => {
-            document.getElementById("resultado").innerHTML = `<div class="alert alert-danger">Erro no processamento</div>`;
-            console.error("Erro:", error);
+            fetch("busca_similaridades.php", {
+                method: "POST",
+                body: formData
+            })
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById("resultado").innerHTML = html;
+                })
+                .catch(error => {
+                    document.getElementById("resultado").innerHTML = `<div class="alert alert-danger">Erro no processamento</div>`;
+                    console.error("Erro:", error);
+                });
         });
-    });
-</script>
 
+        // Função para atualizar resultados com página específica
+        function fBuscarPagina(pagina) {
+            const form = document.getElementById("rbcForm");
 
-   </body>
+            // Atualiza os inputs ocultos dos sliders
+            form.peso_gestation.value = document.getElementById("peso_gestation").value;
+            form.peso_parity.value = document.getElementById("peso_parity").value;
+            form.peso_age.value = document.getElementById("peso_age").value;
+            form.peso_height.value = document.getElementById("peso_height").value;
+            form.peso_weight.value = document.getElementById("peso_weight").value;
+            form.peso_smoke.value = document.getElementById("peso_smoke").value;
+
+            const formData = new FormData(form);
+            formData.append("pagina", pagina);  // adiciona o número da página
+
+            fetch("busca_similaridades.php", {
+                method: "POST",
+                body: formData
+            })
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById("resultado").innerHTML = html;
+                    fAtivaPaginacao(); // reativa os links após atualizar a tabela
+                })
+                .catch(error => {
+                    document.getElementById("resultado").innerHTML = `<div class="alert alert-danger">Erro no processamento</div>`;
+                    console.error("Erro:", error);
+                });
+        }
+
+        // Adiciona eventos aos links de paginação ativando a painaão.
+        function fAtivaPaginacao() {
+            document.querySelectorAll(".pagina-link").forEach(link => {
+                link.addEventListener("click", function (e) {
+                    e.preventDefault();
+                    const pagina = this.getAttribute("data-pagina");
+                    fBuscarPagina(pagina);
+                });
+            });
+        }
+
+        fAtivaPaginacao();
+
+        window.addEventListener("DOMContentLoaded", function () {
+            // Atualiza os valores dos sliders nos inputs ocultos
+            ['gestation', 'parity', 'age', 'height', 'weight', 'smoke'].forEach(campo => {
+                fAtualizaPeso(campo);
+                document.getElementById("rbcForm")[`peso_${campo}`].value = document.getElementById(`peso_${campo}`).value;
+            });
+
+            // Envio o formulário com valores padrões
+            const form = document.getElementById("rbcForm");
+            const formData = new FormData(form);
+
+            fetch("busca_similaridades.php", {
+                method: "POST",
+                body: formData
+            })
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById("resultado").innerHTML = html;
+                })
+                .catch(error => {
+                    document.getElementById("resultado").innerHTML = `<div class="alert alert-danger">Erro no carregamento inicial</div>`;
+                    console.error("Erro:", error);
+                });
+        });
+
+    </script>
+</body>
 
 </html>
